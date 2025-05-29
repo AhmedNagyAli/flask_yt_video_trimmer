@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Select Resolution</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+  <div class="bg-white p-6 rounded shadow-md w-full max-w-md">
+    <h1 class="text-xl font-bold mb-4">Select Resolution</h1>
+    <form method="POST" action="/download" id="downloadForm">
+      <input type="hidden" name="url" value="{{ url }}">
+      
+      <label class="block mb-2 font-semibold">Choose Format:</label>
+      <select name="format_id"
+              class="w-full p-2 border border-gray-300 rounded mb-4" required>
+        {% for format in formats %}
+          <option value="{{ format.id }}">{{ format.id }} - {{ format.resolution }}</option>
+        {% endfor %}
+      </select>
+
+      <label class="block font-semibold">Start Time (HH:MM:SS):</label>
+      <input type="text" name="start_time" placeholder="00:00:10"
+             class="w-full p-2 border border-gray-300 rounded mb-4">
+
+      <label class="block font-semibold">End Time (HH:MM:SS):</label>
+      <input type="text" name="end_time" placeholder="00:00:30"
+             class="w-full p-2 border border-gray-300 rounded mb-4">
+
+      <button type="submit" id="submitBtn"
+              class="w-full bg-green-500 text-white p-2 rounded hover:bg-green-600 flex justify-center items-center space-x-2">
+        <span id="btnText">Download & Trim</span>
+        <svg id="spinner" class="animate-spin h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('downloadForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const spinner = document.getElementById('spinner');
+    const btnText = document.getElementById('btnText');
+
+    form.addEventListener('submit', () => {
+      // Show spinner and disable button
+      spinner.classList.remove('hidden');
+      btnText.textContent = "Processing...";
+      submitBtn.disabled = true;
+    });
+  </script>
+</body>
+</html>
