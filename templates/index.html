@@ -1,20 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>YouTube Downloader</title>
+  <meta charset="UTF-8">
+  <title>YT Video Trimmer</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes blink {
+      0%, 100% { border-color: transparent }
+      50% { border-color: black }
+    }
+    .typewriter {
+      border-right: 2px solid black;
+      white-space: nowrap;
+      overflow: hidden;
+      animation: blink 0.75s step-end infinite;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen">
-  <div class="bg-white p-6 rounded shadow-md w-full max-w-md">
-    <h1 class="text-xl font-bold mb-4">🎥 YouTube Downloader</h1>
-    <form method="POST">
+<body class="bg-gray-100 flex justify-center items-center min-h-screen relative">
+  <!-- Modal -->
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50">
+    <div class="bg-white px-10 py-8 rounded-2xl flex flex-col items-center space-y-6 shadow-2xl">
+      <svg class="w-16 h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p id="typewriterText" class="text-xl font-semibold text-gray-800 typewriter w-full text-center h-8"></p>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="bg-white p-6 rounded shadow-md w-full max-w-md z-10">
+    <h1 class="text-xl font-bold mb-4">🎥 YT Video Trimmer</h1>
+    <form method="POST" id="downloadForm">
       <input type="text" name="youtube_url" placeholder="Enter YouTube URL"
              class="w-full p-2 border border-gray-300 rounded mb-4" required>
       <button type="submit"
-              class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600">
-        Get Resolutions
+              id="submitBtn"
+              class="w-full bg-indigo-500 text-white p-2 rounded hover:bg-blue-600 flex justify-center items-center">
+        <span id="buttonText">Get Resolutions</span>
+        <svg id="spinner" class="hidden w-5 h-5 ml-2 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
       </button>
     </form>
   </div>
+
+  <script>
+    const form = document.getElementById('downloadForm');
+    const modal = document.getElementById('loadingModal');
+    const typewriter = document.getElementById('typewriterText');
+    const message = "Processing the video resolutions...";
+    let index = 0;
+    let isDeleting = false;
+
+    function loopTypewriter() {
+      let currentText = typewriter.textContent;
+
+      if (!isDeleting) {
+        typewriter.textContent = message.substring(0, index + 1);
+        index++;
+        if (index === message.length) {
+          isDeleting = true;
+          setTimeout(loopTypewriter, 1000); // wait before deleting
+          return;
+        }
+      } else {
+        typewriter.textContent = message.substring(0, index - 1);
+        index--;
+        if (index === 0) {
+          isDeleting = false;
+        }
+      }
+
+      setTimeout(loopTypewriter, 60);
+    }
+
+    form.addEventListener('submit', function () {
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('buttonText').textContent = 'Processing...';
+      document.getElementById('spinner').classList.remove('hidden');
+      modal.classList.remove('hidden');
+      loopTypewriter();
+    });
+  </script>
 </body>
 </html>
