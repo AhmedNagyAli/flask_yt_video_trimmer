@@ -49,6 +49,8 @@ def index():
         formats = []
         for line in result.stdout.splitlines():
             if line.strip() and line[0].isdigit():
+                if "audio" in line.lower():
+                    continue
                 parts = line.split()
                 format_id = parts[0]
                 resolution = parts[2] if len(parts) > 2 else 'Unknown'
