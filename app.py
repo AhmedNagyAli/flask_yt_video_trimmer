@@ -5,6 +5,8 @@ import re
 import unicodedata
 import json
 import yt_dlp
+from urllib.parse import urlparse
+
 
 app = Flask(__name__)
 OUTPUT_DIR = "static/videos"
@@ -18,6 +20,11 @@ def safe_name(filename):
 
 def format_time_for_filename(t):
     return re.sub(r'[:.]', '', t) if t else ""
+
+#validate input youtube video url
+def is_valid_youtube_url(url):
+    parsed = urlparse(url)
+    return parsed.netloc in ["www.youtube.com", "youtube.com", "youtu.be"]
 
 def get_preview_url(youtube_url, preferred_resolution='480p'):
     ydl_opts = {'quiet': True, 'skip_download': True}
@@ -41,6 +48,18 @@ def get_preview_url(youtube_url, preferred_resolution='480p'):
 def index():
     if request.method == "POST":
         url = request.form["youtube_url"]
+        
+        if not url:
+            return render_template("index.html", error="YouTube URL is required.")
+
+        if not is_valid_youtube_url(url):
+            return render_template("index.html", error="❌ Invalid YouTube URL. Please enter a valid one.")
+
+        # try:
+        #     with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+        #         info = ydl.extract_info(url, download=False)
+        # except Exception as e:
+        #     return f"Error fetching video info: {str(e)}", 500
         metadata_result = subprocess.run(["yt-dlp", "-j", url], capture_output=True, text=True)
         metadata = json.loads(metadata_result.stdout)
         video_length_seconds = metadata.get("duration", 0)
