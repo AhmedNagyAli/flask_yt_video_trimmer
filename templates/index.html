@@ -18,11 +18,12 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center min-h-screen px-4 relative">
+<body class="bg-gray-100 flex flex-col items-center min-h-screen px-4 py-8 relative">
 
-  <!-- Top Notice Typewriter -->
-  <div class="bg-yellow-200 text-black px-4 py-3 text-center w-full shadow-md">
-    <p id="topTypewriter" class="typewriter font-medium text-sm sm:text-base"></p>
+  <!-- Typewriter Message Above the App -->
+  <div class="mb-6 text-center max-w-xl w-full px-4">
+    <p id="topTypewriterEN" class="typewriter text-gray-800 text-sm sm:text-base font-medium h-6 sm:h-8"></p>
+    <p id="topTypewriterAR" class="typewriter text-gray-800 text-sm sm:text-base font-medium h-6 sm:h-8" dir="rtl"></p>
   </div>
 
   <!-- Modal -->
@@ -37,7 +38,7 @@
   </div>
 
   <!-- Form Container -->
-  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm sm:max-w-md z-10 mt-6">
+  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm sm:max-w-md z-10">
     <h1 class="text-lg sm:text-xl font-bold mb-4 text-center">🎥 YT Video Trimmer</h1>
 
     {% if error %}
@@ -78,15 +79,12 @@
     </form>
   </div>
 
+  <!-- Scripts -->
   <script>
     const form = document.getElementById('downloadForm');
     const modal = document.getElementById('loadingModal');
     const typewriter = document.getElementById('typewriterText');
-    const topTypewriter = document.getElementById('topTypewriter');
-
     const message = "Processing the video resolutions...";
-    const topMessage = "⚠️ Since it is a free hosting, it only works with small videos and may crash multiple times before your video is ready. Sorry for that, and we hope you wait for the final version. ⚠️ بما أنه استضافة مجانية، فهي تعمل فقط مع الفيديوهات الصغيرة وقد تنهار عدة مرات قبل تجهيز الفيديو. نأسف لذلك ونأمل أن تنتظروا النسخة النهائية.";
-
     let index = 0;
     let isDeleting = false;
 
@@ -112,20 +110,6 @@
       setTimeout(loopTypewriter, 60);
     }
 
-    function loopTopTypewriter() {
-      let i = 0;
-      function typeNextChar() {
-        if (i < topMessage.length) {
-          topTypewriter.textContent += topMessage.charAt(i);
-          i++;
-          setTimeout(typeNextChar, 40);
-        }
-      }
-      typeNextChar();
-    }
-
-    loopTopTypewriter();
-
     form.addEventListener('submit', function () {
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('buttonText').textContent = 'Processing...';
@@ -133,6 +117,32 @@
       modal.classList.remove('hidden');
       loopTypewriter();
     });
+
+    // Top message animation
+    const topEN = document.getElementById('topTypewriterEN');
+    const topAR = document.getElementById('topTypewriterAR');
+
+    const messageEN = "Since it is a free hosting it only works on small videos and still have problems and may crash many times till you can get your video ...sorry for that and we hope you wait for the final version";
+    const messageAR = "نظرًا لأنه استضافة مجانية ، فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي";
+
+    let enIndex = 0;
+    let arIndex = 0;
+
+    function typeTopMessage() {
+      if (enIndex <= messageEN.length) {
+        topEN.textContent = messageEN.substring(0, enIndex++);
+      }
+      if (arIndex <= messageAR.length) {
+        topAR.textContent = messageAR.substring(0, arIndex++);
+      }
+
+      if (enIndex <= messageEN.length || arIndex <= messageAR.length) {
+        setTimeout(typeTopMessage, 50);
+      }
+    }
+
+    window.addEventListener('load', typeTopMessage);
   </script>
 </body>
+
 </html>
