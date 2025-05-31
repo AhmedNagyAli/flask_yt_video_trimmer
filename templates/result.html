@@ -9,20 +9,18 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
   <div class="w-full max-w-3xl bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8">
     <h1 class="text-xl sm:text-2xl font-semibold mb-4 text-center">Here is your trimmed video</h1>
-
-    <p class="text-sm text-gray-500 mb-4 text-center">Size: {{ file_size }} MB</p>
-
+    
     <video
       controls
       class="w-full h-auto max-h-[60vh] rounded-md shadow-md mb-6"
-      src="{{ url_for('serve_video', filename=filename) }}"
+      src="{{ url_for('static', filename=filename) }}"
     >
       Sorry, your browser doesn't support embedded videos.
     </video>
 
     <div class="text-center">
       <a
-        href="{{ url_for('serve_video', filename=filename) }}"
+        href="{{ url_for('static', filename=filename) }}"
         download
         class="inline-block w-full sm:w-auto bg-indigo-700 hover:bg-indigo-900 text-white font-semibold py-3 px-6 rounded-md transition"
       >

@@ -1,11 +1,9 @@
-from flask import Flask, abort, after_this_request, render_template, request, send_from_directory
+from flask import Flask, after_this_request, render_template, request, send_from_directory
 import subprocess
-from slugify import slugify
 import os
 import re
 import unicodedata
 import json
-import urllib
 import yt_dlp
 from urllib.parse import urlparse
 
@@ -20,11 +18,8 @@ def safe_name(filename):
     safe_str = re.sub(r"\s+", "_", safe_str)
     return safe_str
 
-def format_time_for_filename(time_str):
-    try:
-        return time_str.replace(":", "-") if time_str else ""
-    except Exception:
-        return ""
+def format_time_for_filename(t):
+    return re.sub(r'[:.]', '', t) if t else ""
 
 #validate input youtube video url
 def is_valid_youtube_url(url):
@@ -134,7 +129,9 @@ def download():
 
     start_str = format_time_for_filename(start_time)
     end_str = format_time_for_filename(end_time)
-    trimmed_suffix = f"_start-{start_str}_end-{end_str}" if start_str or end_str else ""
+    trimmed_suffix = ""
+    if start_str or end_str:
+        trimmed_suffix = f"_start-{start_str}_end-{end_str}"
 
     output_filename = f"{safe_title}{trimmed_suffix}.mp4"
     output_path = os.path.join(folder_path, output_filename)
@@ -147,60 +144,53 @@ def download():
 
     duration = end_sec - start_sec if start_sec is not None and end_sec is not None and end_sec > start_sec else None
 
+    # Build the FFmpeg command
     ffmpeg_cmd = ["ffmpeg", "-y"]
+
+    # Input files
     ffmpeg_cmd.extend(["-i", video_path])
     if audio_path:
         ffmpeg_cmd.extend(["-i", audio_path])
+
+    # Apply the same trimming to both streams
     if start_sec is not None:
         ffmpeg_cmd.extend(["-ss", str(start_sec)])
     if duration is not None:
         ffmpeg_cmd.extend(["-t", str(duration)])
 
+    # Output settings
     ffmpeg_cmd.extend(["-c:v", "libx264", "-preset", "fast", "-crf", "23"])
+    
     if audio_path:
         ffmpeg_cmd.extend(["-c:a", "aac", "-b:a", "128k", "-map", "0:v:0", "-map", "1:a:0"])
     else:
-        ffmpeg_cmd.extend(["-c:a", "copy"])
+        ffmpeg_cmd.extend(["-c:a", "copy"])  # Just copy the audio if it's already in the video
 
     ffmpeg_cmd.append(output_path)
     subprocess.run(ffmpeg_cmd)
 
-    # Clean up
+    # Clean up temporary files
     os.remove(video_path)
     if audio_path:
         os.remove(audio_path)
 
-    file_size = round(os.path.getsize(output_path) / (1024 * 1024), 2)
-    return render_template("result.html", filename=os.path.join(safe_title, output_filename), file_size=file_size)
+    relative_path = f"videos/{safe_title}/{output_filename}"
+    return render_template("result.html", filename=relative_path)
 
 
-@app.route("/videos/<path:filename>")
+@app.route("/videos/<filename>")
 def serve_video(filename):
-    # Decode the filename in case it's URL-encoded (like Arabic characters)
-    decoded_filename = urllib.parse.unquote(filename)
-    
-    # Create the full path
-    file_path = os.path.join(OUTPUT_DIR, decoded_filename)
-
-    # Check if file exists
-    if not os.path.exists(file_path):
-        app.logger.error(f"File not found: {file_path}")
-        return abort(404, description="Video file not found.")
+    file_path = os.path.join(OUTPUT_DIR, filename)
 
     @after_this_request
     def remove_file(response):
         try:
             os.remove(file_path)
-            app.logger.info(f"Deleted file: {file_path}")
         except Exception as e:
             app.logger.error(f"Error deleting file {file_path}: {e}")
         return response
 
-    try:
-        return send_from_directory(OUTPUT_DIR, decoded_filename, as_attachment=True)
-    except Exception as e:
-        app.logger.error(f"Error sending file: {e}")
-        return abort(500, description="An error occurred while sending the video.")
+    return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
 # if __name__ == "__main__":
 #     app.run(debug=True)
 
