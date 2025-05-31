@@ -18,7 +18,12 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen px-4 relative">
+<body class="bg-gray-100 flex flex-col items-center min-h-screen px-4 relative">
+
+  <!-- Top Notice Typewriter -->
+  <div class="bg-yellow-200 text-black px-4 py-3 text-center w-full shadow-md">
+    <p id="topTypewriter" class="typewriter font-medium text-sm sm:text-base"></p>
+  </div>
 
   <!-- Modal -->
   <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
@@ -32,52 +37,56 @@
   </div>
 
   <!-- Form Container -->
-<div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm sm:max-w-md z-10">
-  <h1 class="text-lg sm:text-xl font-bold mb-4 text-center">🎥 YT Video Trimmer</h1>
+  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm sm:max-w-md z-10 mt-6">
+    <h1 class="text-lg sm:text-xl font-bold mb-4 text-center">🎥 YT Video Trimmer</h1>
 
-  {% if error %}
-    <div class="mb-4 text-red-600 bg-red-100 border border-red-400 p-2 rounded text-sm text-center">
-      {{ error }}
-    </div>
-  {% endif %}
+    {% if error %}
+      <div class="mb-4 text-red-600 bg-red-100 border border-red-400 p-2 rounded text-sm text-center">
+        {{ error }}
+      </div>
+    {% endif %}
 
-  <form method="POST" id="downloadForm" class="space-y-4">
-    <input
-      type="text"
-      name="youtube_url"
-      placeholder="Enter YouTube URL"
-      class="w-full p-2 border border-gray-300 rounded"
-      required
-    >
-    <button
-      type="submit"
-      id="submitBtn"
-      class="w-full bg-indigo-700 text-white p-2 rounded hover:bg-blue-600 flex justify-center items-center"
-    >
-      <span id="buttonText">Get Resolutions</span>
-      <svg
-        id="spinner"
-        class="hidden w-5 h-5 ml-2 text-white animate-spin"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
+    <form method="POST" id="downloadForm" class="space-y-4">
+      <input
+        type="text"
+        name="youtube_url"
+        placeholder="Enter YouTube URL"
+        class="w-full p-2 border border-gray-300 rounded"
+        required
       >
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-    </button>
-  </form>
-</div>
+      <button
+        type="submit"
+        id="submitBtn"
+        class="w-full bg-indigo-700 text-white p-2 rounded hover:bg-blue-600 flex justify-center items-center"
+      >
+        <span id="buttonText">Get Resolutions</span>
+        <svg
+          id="spinner"
+          class="hidden w-5 h-5 ml-2 text-white animate-spin"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </button>
+    </form>
+  </div>
 
   <script>
     const form = document.getElementById('downloadForm');
     const modal = document.getElementById('loadingModal');
     const typewriter = document.getElementById('typewriterText');
+    const topTypewriter = document.getElementById('topTypewriter');
+
     const message = "Processing the video resolutions...";
+    const topMessage = "⚠️ Since it is a free hosting, it only works with small videos and may crash multiple times before your video is ready. Sorry for that, and we hope you wait for the final version. ⚠️ بما أنه استضافة مجانية، فهي تعمل فقط مع الفيديوهات الصغيرة وقد تنهار عدة مرات قبل تجهيز الفيديو. نأسف لذلك ونأمل أن تنتظروا النسخة النهائية.";
+
     let index = 0;
     let isDeleting = false;
 
@@ -89,7 +98,7 @@
         index++;
         if (index === message.length) {
           isDeleting = true;
-          setTimeout(loopTypewriter, 1000); // wait before deleting
+          setTimeout(loopTypewriter, 1000);
           return;
         }
       } else {
@@ -102,6 +111,20 @@
 
       setTimeout(loopTypewriter, 60);
     }
+
+    function loopTopTypewriter() {
+      let i = 0;
+      function typeNextChar() {
+        if (i < topMessage.length) {
+          topTypewriter.textContent += topMessage.charAt(i);
+          i++;
+          setTimeout(typeNextChar, 40);
+        }
+      }
+      typeNextChar();
+    }
+
+    loopTopTypewriter();
 
     form.addEventListener('submit', function () {
       document.getElementById('submitBtn').disabled = true;
