@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, after_this_request, render_template, request, send_from_directory
 import subprocess
 import os
 import re
@@ -180,8 +180,17 @@ def download():
 
 @app.route("/videos/<filename>")
 def serve_video(filename):
-    return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+    file_path = os.path.join(OUTPUT_DIR, filename)
 
+    @after_this_request
+    def remove_file(response):
+        try:
+            os.remove(file_path)
+        except Exception as e:
+            app.logger.error(f"Error deleting file {file_path}: {e}")
+        return response
+
+    return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
 # if __name__ == "__main__":
 #     app.run(debug=True)
 
