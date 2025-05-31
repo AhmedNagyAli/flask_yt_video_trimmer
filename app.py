@@ -182,5 +182,9 @@ def download():
 def serve_video(filename):
     return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
 
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT",6000))
+    app.run(host="0.0.0.0",port=port)
