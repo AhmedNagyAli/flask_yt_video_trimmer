@@ -21,14 +21,14 @@
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen px-4 py-8">
 
   <!-- Animated Bilingual Text Above Form -->
-  <div class="max-w-xl w-full mb-6 text-center space-y-2">
-    <div>
+  <div class="max-w-xl w-full mb-6 text-center space-y-4">
+    <div class="space-y-2">
       <!-- English lines container -->
       <p id="lineEN1" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineEN2" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineEN3" class="text-gray-900 font-semibold text-base h-6"></p>
     </div>
-    <div dir="rtl" class="space-y-1">
+    <div dir="rtl" class="space-y-2">
       <!-- Arabic lines container -->
       <p id="lineAR1" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineAR2" class="text-gray-900 font-semibold text-base h-6"></p>
@@ -90,61 +90,21 @@
   </div>
 
   <!-- Scripts -->
-  <script>
-    // Modal form handling (same as before)
-    const form = document.getElementById('downloadForm');
-    const modal = document.getElementById('loadingModal');
-    const typewriter = document.getElementById('typewriterText');
-    const message = "Processing the video resolutions...";
-    let modalIndex = 0;
-    let modalDeleting = false;
-
-    function loopModalTypewriter() {
-      if (!modalDeleting) {
-        typewriter.textContent = message.substring(0, modalIndex + 1);
-        modalIndex++;
-        if (modalIndex === message.length) {
-          modalDeleting = true;
-          setTimeout(loopModalTypewriter, 1000);
-          return;
-        }
-      } else {
-        typewriter.textContent = message.substring(0, modalIndex - 1);
-        modalIndex--;
-        if (modalIndex === 0) {
-          modalDeleting = false;
-        }
-      }
-
-      setTimeout(loopModalTypewriter, 60);
-    }
-
-    form.addEventListener('submit', function () {
-      document.getElementById('submitBtn').disabled = true;
-      document.getElementById('buttonText').textContent = 'Processing...';
-      document.getElementById('spinner').classList.remove('hidden');
-      modal.classList.remove('hidden');
-      loopModalTypewriter();
-    });
-
-
-    // ----------- Top Text Lines Animation -----------
-
-    // English lines
+   <script>
+    // Text lines
     const linesEN = [
       "Since it is a free hosting,",
       "it only works on small videos and still has problems,",
       "and may crash many times till you can get your video... sorry for that and we hope you wait for the final version."
     ];
 
-    // Arabic lines
     const linesAR = [
       "نظرًا لأنه استضافة مجانية،",
       "فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل،",
       "وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
     ];
 
-    // Get elements for each line
+    // Elements
     const elemsEN = [
       document.getElementById('lineEN1'),
       document.getElementById('lineEN2'),
@@ -157,7 +117,7 @@
       document.getElementById('lineAR3')
     ];
 
-    // Typewriter loop for a single line (returns a Promise)
+    // Typewriter loop for a single element (returns a Promise)
     function typeWriterLoop(element, text, speed = 60) {
       return new Promise(async (resolve) => {
         // Type in
@@ -177,16 +137,19 @@
       });
     }
 
-    // Loop all lines sequentially forever
+    // Animate one line pair simultaneously
+    async function animateLinePair(index) {
+      await Promise.all([
+        typeWriterLoop(elemsEN[index], linesEN[index]),
+        typeWriterLoop(elemsAR[index], linesAR[index]),
+      ]);
+    }
+
+    // Loop all lines pairs forever
     async function loopAllLines() {
       while (true) {
-        // English lines
         for (let i = 0; i < linesEN.length; i++) {
-          await typeWriterLoop(elemsEN[i], linesEN[i]);
-        }
-        // Arabic lines
-        for (let i = 0; i < linesAR.length; i++) {
-          await typeWriterLoop(elemsAR[i], linesAR[i]);
+          await animateLinePair(i);
         }
       }
     }
