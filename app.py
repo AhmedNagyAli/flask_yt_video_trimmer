@@ -83,114 +83,143 @@ def index():
 
 @app.route("/download", methods=["POST"])
 def download():
-    url = request.form["url"]
-    format_id = request.form["format_id"]
-    start_time = request.form.get("start_time", "")
-    end_time = request.form.get("end_time", "")
-
-    result_title = subprocess.run(["yt-dlp", "--get-title", url], capture_output=True, text=True)
-    video_title = result_title.stdout.strip()
-    safe_title = safe_name(video_title)
-
-    folder_path = os.path.join(OUTPUT_DIR, safe_title)
-    os.makedirs(folder_path, exist_ok=True)
-
-    result_info = subprocess.run(["yt-dlp", "-f", format_id, "-j", url], capture_output=True, text=True)
-    info = json.loads(result_info.stdout)
-
-    video_url = None
-    audio_url = None
-    for f in info.get("formats", []):
-        if str(f.get("format_id")) == format_id:
-            if f.get("acodec") == "none":
-                video_url = f.get("url")
-            elif f.get("vcodec") == "none":
-                audio_url = f.get("url")
-            else:
-                video_url = f.get("url")
-                audio_url = None
-            break
-
-    if audio_url is None:
-        audio_formats = [f for f in info.get("formats", []) if f.get("acodec") != "none" and f.get("vcodec") == "none"]
-        if audio_formats:
-            audio_formats.sort(key=lambda x: (x.get("abr") or 0), reverse=True)
-            audio_url = audio_formats[0].get("url")
-
-    if video_url is None:
-        return "Video URL not found", 400
-
-    video_path = os.path.join(folder_path, "video.mp4")
-    audio_path = os.path.join(folder_path, "audio.m4a") if audio_url else None
-
-    subprocess.run(["ffmpeg", "-y", "-i", video_url, "-c", "copy", video_path])
-    if audio_url:
-        subprocess.run(["ffmpeg", "-y", "-i", audio_url, "-c", "copy", audio_path])
-
-    start_str = format_time_for_filename(start_time)
-    end_str = format_time_for_filename(end_time)
-    trimmed_suffix = ""
-    if start_str or end_str:
-        trimmed_suffix = f"_start-{start_str}_end-{end_str}"
-
-    output_filename = f"{safe_title}{trimmed_suffix}.mp4"
-    output_path = os.path.join(folder_path, output_filename)
-
     try:
-        start_sec = float(start_time) if start_time else None
-        end_sec = float(end_time) if end_time else None
-    except ValueError:
-        start_sec = end_sec = None
+        url = request.form["url"]
+        format_id = request.form["format_id"]
+        start_time = request.form.get("start_time", "")
+        end_time = request.form.get("end_time", "")
 
-    duration = end_sec - start_sec if start_sec is not None and end_sec is not None and end_sec > start_sec else None
+        # Get video title and create safe filename
+        result_title = subprocess.run(["yt-dlp", "--get-title", url], capture_output=True, text=True)
+        if result_title.returncode != 0:
+            return "Error getting video title", 400
+        video_title = result_title.stdout.strip()
+        safe_title = safe_name(video_title)
 
-    # Build the FFmpeg command
-    ffmpeg_cmd = ["ffmpeg", "-y"]
+        # Create output directory
+        folder_path = os.path.join(OUTPUT_DIR, safe_title)
+        os.makedirs(folder_path, exist_ok=True)
 
-    # Input files
-    ffmpeg_cmd.extend(["-i", video_path])
-    if audio_path:
-        ffmpeg_cmd.extend(["-i", audio_path])
+        # Get video info
+        result_info = subprocess.run(["yt-dlp", "-f", format_id, "-j", url], capture_output=True, text=True)
+        if result_info.returncode != 0:
+            return "Error getting video info", 400
+        info = json.loads(result_info.stdout)
 
-    # Apply the same trimming to both streams
-    if start_sec is not None:
-        ffmpeg_cmd.extend(["-ss", str(start_sec)])
-    if duration is not None:
-        ffmpeg_cmd.extend(["-t", str(duration)])
+        # Extract video and audio URLs
+        video_url = None
+        audio_url = None
+        for f in info.get("formats", []):
+            if str(f.get("format_id")) == format_id:
+                if f.get("acodec") == "none":
+                    video_url = f.get("url")
+                elif f.get("vcodec") == "none":
+                    audio_url = f.get("url")
+                else:
+                    video_url = f.get("url")
+                    audio_url = None
+                break
 
-    # Output settings
-    ffmpeg_cmd.extend(["-c:v", "libx264", "-preset", "fast", "-crf", "23"])
-    
-    if audio_path:
-        ffmpeg_cmd.extend(["-c:a", "aac", "-b:a", "128k", "-map", "0:v:0", "-map", "1:a:0"])
-    else:
-        ffmpeg_cmd.extend(["-c:a", "copy"])  # Just copy the audio if it's already in the video
+        if video_url is None:
+            return "Video URL not found", 400
 
-    ffmpeg_cmd.append(output_path)
-    subprocess.run(ffmpeg_cmd)
+        # Get best audio if needed
+        if audio_url is None:
+            audio_formats = [f for f in info.get("formats", []) if f.get("acodec") != "none" and f.get("vcodec") == "none"]
+            if audio_formats:
+                audio_formats.sort(key=lambda x: (x.get("abr") or 0), reverse=True)
+                audio_url = audio_formats[0].get("url")
 
-    # Clean up temporary files
-    os.remove(video_path)
-    if audio_path:
-        os.remove(audio_path)
+        # Prepare filenames
+        start_str = format_time_for_filename(start_time)
+        end_str = format_time_for_filename(end_time)
+        trimmed_suffix = f"_start-{start_str}_end-{end_str}" if start_str or end_str else ""
+        output_filename = f"{safe_title}{trimmed_suffix}.mp4"
+        output_path = os.path.join(folder_path, output_filename)
 
-    relative_path = f"videos/{safe_title}/{output_filename}"
-    return render_template("result.html", filename=relative_path)
-
-
-@app.route("/videos/<filename>")
-def serve_video(filename):
-    file_path = os.path.join(OUTPUT_DIR, filename)
-
-    @after_this_request
-    def remove_file(response):
+        # Parse time values
         try:
-            os.remove(file_path)
-        except Exception as e:
-            app.logger.error(f"Error deleting file {file_path}: {e}")
-        return response
+            start_sec = float(start_time) if start_time else None
+            end_sec = float(end_time) if end_time else None
+        except ValueError:
+            start_sec = end_sec = None
 
-    return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+        duration = end_sec - start_sec if start_sec is not None and end_sec is not None and end_sec > start_sec else None
+
+        # Build FFmpeg command
+        ffmpeg_cmd = ["ffmpeg", "-y"]
+        
+        # Input URLs directly (no need to download separately)
+        ffmpeg_cmd.extend(["-i", video_url])
+        if audio_url:
+            ffmpeg_cmd.extend(["-i", audio_url])
+
+        # Apply trimming
+        if start_sec is not None:
+            ffmpeg_cmd.extend(["-ss", str(start_sec)])
+        if duration is not None:
+            ffmpeg_cmd.extend(["-t", str(duration)])
+
+        # Output settings
+        ffmpeg_cmd.extend([
+            "-c:v", "libx264",
+            "-preset", "fast",
+            "-crf", "23",
+            "-movflags", "+faststart"
+        ])
+        
+        if audio_url:
+            ffmpeg_cmd.extend([
+                "-c:a", "aac",
+                "-b:a", "128k",
+                "-map", "0:v:0",
+                "-map", "1:a:0"
+            ])
+        else:
+            ffmpeg_cmd.extend(["-c:a", "copy"])
+
+        ffmpeg_cmd.append(output_path)
+
+        # Run FFmpeg
+        result = subprocess.run(ffmpeg_cmd, stderr=subprocess.PIPE)
+        if result.returncode != 0:
+            app.logger.error(f"FFmpeg failed: {result.stderr.decode()}")
+            return "Error processing video", 500
+
+        if not os.path.exists(output_path):
+            return "Error: Output file was not created", 500
+
+        relative_path = f"videos/{safe_title}/{output_filename}"
+        return render_template("result.html", filename=relative_path)
+
+    except Exception as e:
+        app.logger.error(f"Error in download route: {str(e)}")
+        return "An error occurred while processing your request", 500
+
+
+@app.route("/videos/<path:filename>")
+def serve_video(filename):
+    try:
+        # Don't delete immediately - let the user download first
+        return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+    except Exception as e:
+        app.logger.error(f"Error serving video: {str(e)}")
+        return "File not found", 404
+
+# @app.route("/videos/<filename>")
+# def serve_video(filename):
+#     file_path = os.path.join(OUTPUT_DIR, filename)
+
+#     @after_this_request
+#     def remove_file(response):
+#         try:
+#             os.remove(file_path)
+#         except Exception as e:
+#             app.logger.error(f"Error deleting file {file_path}: {e}")
+#         return response
+
+#     return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+
 # if __name__ == "__main__":
 #     app.run(debug=True)
 
