@@ -18,24 +18,21 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4 py-8 relative">
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen px-4 py-8">
 
-  <!-- Typewriter Message in the Middle -->
-  <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
-    <div class="text-center">
-      <p id="topTypewriterEN" class="text-gray-900 text-sm sm:text-base font-semibold h-6 sm:h-8"></p>
-      <p id="topTypewriterAR" class="text-gray-900 text-sm sm:text-base font-semibold h-6 sm:h-8" dir="rtl"></p>
+  <!-- Animated Bilingual Text Above Form -->
+  <div class="max-w-xl w-full mb-6 text-center space-y-2">
+    <div>
+      <!-- English lines container -->
+      <p id="lineEN1" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineEN2" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineEN3" class="text-gray-900 font-semibold text-base h-6"></p>
     </div>
-  </div>
-
-  <!-- Modal -->
-  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
-    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 sm:space-y-6 w-full max-w-sm sm:max-w-md shadow-2xl">
-      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8 sm:h-10"></p>
+    <div dir="rtl" class="space-y-1">
+      <!-- Arabic lines container -->
+      <p id="lineAR1" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineAR2" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineAR3" class="text-gray-900 font-semibold text-base h-6"></p>
     </div>
   </div>
 
@@ -81,8 +78,20 @@
     </form>
   </div>
 
+  <!-- Modal (same as before) -->
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
+    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 sm:space-y-6 w-full max-w-sm sm:max-w-md shadow-2xl">
+      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8 sm:h-10"></p>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script>
+    // Modal form handling (same as before)
     const form = document.getElementById('downloadForm');
     const modal = document.getElementById('loadingModal');
     const typewriter = document.getElementById('typewriterText');
@@ -118,52 +127,74 @@
       loopModalTypewriter();
     });
 
-    // Top message loop animation
-    const topEN = document.getElementById('topTypewriterEN');
-    const topAR = document.getElementById('topTypewriterAR');
 
-    const messageEN = "Since it is a free hosting it only works on small videos and still have problems and may crash many times till you can get your video ...sorry for that and we hope you wait for the final version";
-    const messageAR = "نظرًا لأنه استضافة مجانية ، فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي";
+    // ----------- Top Text Lines Animation -----------
 
-    let enIndex = 0, arIndex = 0;
-    let enDeleting = false, arDeleting = false;
+    // English lines
+    const linesEN = [
+      "Since it is a free hosting,",
+      "it only works on small videos and still has problems,",
+      "and may crash many times till you can get your video... sorry for that and we hope you wait for the final version."
+    ];
 
-    function loopTopMessages() {
-      // English loop
-      if (!enDeleting) {
-        topEN.textContent = messageEN.substring(0, enIndex + 1);
-        enIndex++;
-        if (enIndex === messageEN.length) {
-          enDeleting = true;
+    // Arabic lines
+    const linesAR = [
+      "نظرًا لأنه استضافة مجانية،",
+      "فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل،",
+      "وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
+    ];
+
+    // Get elements for each line
+    const elemsEN = [
+      document.getElementById('lineEN1'),
+      document.getElementById('lineEN2'),
+      document.getElementById('lineEN3')
+    ];
+
+    const elemsAR = [
+      document.getElementById('lineAR1'),
+      document.getElementById('lineAR2'),
+      document.getElementById('lineAR3')
+    ];
+
+    // Typewriter loop for a single line (returns a Promise)
+    function typeWriterLoop(element, text, speed = 60) {
+      return new Promise(async (resolve) => {
+        // Type in
+        for (let i = 0; i <= text.length; i++) {
+          element.textContent = text.substring(0, i);
+          await new Promise(r => setTimeout(r, speed));
         }
-      } else {
-        topEN.textContent = messageEN.substring(0, enIndex - 1);
-        enIndex--;
-        if (enIndex === 0) {
-          enDeleting = false;
+        // Pause
+        await new Promise(r => setTimeout(r, 1000));
+        // Delete
+        for (let i = text.length; i >= 0; i--) {
+          element.textContent = text.substring(0, i);
+          await new Promise(r => setTimeout(r, speed));
         }
-      }
-
-      // Arabic loop
-      if (!arDeleting) {
-        topAR.textContent = messageAR.substring(0, arIndex + 1);
-        arIndex++;
-        if (arIndex === messageAR.length) {
-          arDeleting = true;
-        }
-      } else {
-        topAR.textContent = messageAR.substring(0, arIndex - 1);
-        arIndex--;
-        if (arIndex === 0) {
-          arDeleting = false;
-        }
-      }
-
-      setTimeout(loopTopMessages, 60);
+        await new Promise(r => setTimeout(r, 500));
+        resolve();
+      });
     }
 
-    window.addEventListener('load', loopTopMessages);
+    // Loop all lines sequentially forever
+    async function loopAllLines() {
+      while (true) {
+        // English lines
+        for (let i = 0; i < linesEN.length; i++) {
+          await typeWriterLoop(elemsEN[i], linesEN[i]);
+        }
+        // Arabic lines
+        for (let i = 0; i < linesAR.length; i++) {
+          await typeWriterLoop(elemsAR[i], linesAR[i]);
+        }
+      }
+    }
+
+    window.addEventListener('load', loopAllLines);
   </script>
+
 </body>
+
 
 </html>
