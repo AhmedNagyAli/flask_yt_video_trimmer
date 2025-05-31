@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Select Resolution</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes blink {
       0%, 100% { border-color: transparent; }
       50% { border-color: black; }
     }
-
     .typewriter {
       border-right: 2px solid black;
       white-space: nowrap;
@@ -17,7 +18,7 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center min-h-screen px-4 sm:px-6 lg:px-8 relative">
+<body class="bg-gray-100 flex justify-center items-center min-h-screen px-4 relative">
 
   <!-- Modal -->
   <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
@@ -32,12 +33,12 @@
   </div>
 
   <!-- Main Content -->
-  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-3xl z-10">
+  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-full sm:max-w-2xl mx-auto z-10">
 
     <!-- Video Preview -->
     <div class="mb-6">
       {% if preview_url %}
-        <video id="previewVideo" controls class="w-full h-48 sm:h-64 md:h-80 lg:h-[400px] rounded-lg shadow">
+        <video id="previewVideo" controls class="w-full aspect-video rounded-lg shadow">
           <source src="{{ preview_url }}" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -47,7 +48,9 @@
     </div>
 
     <!-- Title -->
-    <h1 class="text-xl sm:text-2xl font-bold mb-6 text-gray-800 text-center sm:text-left">Select Resolution & Time Range</h1>
+    <h1 class="text-xl sm:text-2xl font-bold mb-6 text-gray-800 text-center sm:text-left break-words">
+      Select Resolution & Time Range
+    </h1>
 
     <!-- Form -->
     <form method="POST" action="/download" id="downloadForm" class="space-y-6">
@@ -56,7 +59,7 @@
       <!-- Format Selector -->
       <div>
         <label class="block mb-2 font-semibold text-gray-700">Choose Format:</label>
-        <select name="format_id" class="w-full p-2 sm:p-3 border border-gray-300 rounded text-sm sm:text-base" required>
+        <select name="format_id" class="block w-full p-2 sm:p-3 border border-gray-300 rounded text-sm sm:text-base" required>
           {% for format in formats %}
             <option value="{{ format.id }}">{{ format.id }} - {{ format.resolution }}</option>
           {% endfor %}
@@ -64,20 +67,20 @@
       </div>
 
       <!-- Time Range Slider -->
-      <div class="mb-6">
+      <div>
         <label for="start_time" class="block font-semibold text-gray-700 mb-2">
           Start Time: <span id="startTimeLabel">00:00:00</span>
         </label>
         <input type="range" name="start_time" id="start_time"
                min="0" max="{{ video_length }}" value="0"
-               class="w-full appearance-none bg-gray-200 h-2 rounded">
+               class="block w-full appearance-none bg-gray-200 h-2 rounded">
 
         <label for="end_time" class="block font-semibold text-gray-700 mt-4 mb-2">
           End Time: <span id="endTimeLabel"></span>
         </label>
         <input type="range" name="end_time" id="end_time"
                min="1" max="{{ video_length }}" value="{{ video_length }}"
-               class="w-full appearance-none bg-gray-200 h-2 rounded">
+               class="block w-full appearance-none bg-gray-200 h-2 rounded">
       </div>
 
       <!-- Submit Button -->
@@ -122,7 +125,7 @@
 
     startSlider.addEventListener('input', updateLabels);
     endSlider.addEventListener('input', updateLabels);
-    updateLabels(); // initialize on load
+    updateLabels();
 
     // Modal Typewriter Logic
     const form = document.getElementById('downloadForm');
