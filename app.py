@@ -1,10 +1,11 @@
-from flask import Flask, after_this_request, render_template, request, send_from_directory
+from flask import Flask, abort, after_this_request, render_template, request, send_from_directory
 import subprocess
 from slugify import slugify
 import os
 import re
 import unicodedata
 import json
+import urllib
 import yt_dlp
 from urllib.parse import urlparse
 
@@ -175,18 +176,31 @@ def download():
 
 @app.route("/videos/<path:filename>")
 def serve_video(filename):
-    file_path = os.path.join(OUTPUT_DIR, filename)
+    # Decode the filename in case it's URL-encoded (like Arabic characters)
+    decoded_filename = urllib.parse.unquote(filename)
+    
+    # Create the full path
+    file_path = os.path.join(OUTPUT_DIR, decoded_filename)
+
+    # Check if file exists
+    if not os.path.exists(file_path):
+        app.logger.error(f"File not found: {file_path}")
+        return abort(404, description="Video file not found.")
 
     @after_this_request
     def remove_file(response):
         try:
             os.remove(file_path)
+            app.logger.info(f"Deleted file: {file_path}")
         except Exception as e:
             app.logger.error(f"Error deleting file {file_path}: {e}")
         return response
 
-    return send_from_directory(OUTPUT_DIR, filename, as_attachment=False)
-
+    try:
+        return send_from_directory(OUTPUT_DIR, decoded_filename, as_attachment=True)
+    except Exception as e:
+        app.logger.error(f"Error sending file: {e}")
+        return abort(500, description="An error occurred while sending the video.")
 # if __name__ == "__main__":
 #     app.run(debug=True)
 
