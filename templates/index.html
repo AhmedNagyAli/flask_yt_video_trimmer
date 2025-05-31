@@ -7,8 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes blink {
-      0%, 100% { border-color: transparent; }
-      50% { border-color: black; }
+      0%, 100% { border-color: transparent }
+      50% { border-color: black }
     }
     .typewriter {
       border-right: 2px solid black;
@@ -20,15 +20,31 @@
 </head>
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen px-4 py-8">
 
-  <!-- Description Typing Header -->
-  <div class="max-w-xl w-full text-center mb-6">
-    <p id="descEN" class="text-gray-900 font-semibold text-lg h-6"></p>
-    <p id="descAR" class="text-gray-900 font-semibold text-lg h-6" dir="rtl"></p>
+  <!-- Arabic-only description above the form -->
+  <div class="max-w-xl w-full mb-4 text-center space-y-2" dir="rtl">
+    <p id="introAR" class="text-gray-900 font-semibold text-base h-6"></p>
   </div>
 
-  <!-- Form -->
-  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm z-10">
+  <!-- Modal -->
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
+    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 sm:space-y-6 w-full max-w-sm sm:max-w-md shadow-2xl">
+      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8 sm:h-10"></p>
+    </div>
+  </div>
+
+  <!-- Form Container -->
+  <div class="bg-white p-4 sm:p-6 rounded shadow-md w-full max-w-sm sm:max-w-md z-10">
     <h1 class="text-lg sm:text-xl font-bold mb-4 text-center">🎥 YT Video Trimmer</h1>
+
+    {% if error %}
+      <div class="mb-4 text-red-600 bg-red-100 border border-red-400 p-2 rounded text-sm text-center">
+        {{ error }}
+      </div>
+    {% endif %}
 
     <form method="POST" id="downloadForm" class="space-y-4">
       <input
@@ -41,7 +57,7 @@
       <button
         type="submit"
         id="submitBtn"
-        class="w-full bg-indigo-700 text-white p-2 rounded hover:bg-indigo-800 flex justify-center items-center"
+        class="w-full bg-indigo-700 text-white p-2 rounded hover:bg-blue-600 flex justify-center items-center"
       >
         <span id="buttonText">Get Resolutions</span>
         <svg
@@ -52,44 +68,43 @@
           viewBox="0 0 24 24"
         >
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
         </svg>
       </button>
     </form>
   </div>
 
-  <!-- Bilingual lines below form -->
-  <div class="max-w-xl w-full mt-6 text-center space-y-1">
-    <p id="lineEN1" class="text-gray-900 font-semibold text-base h-6"></p>
-    <p id="lineAR1" class="text-gray-900 font-semibold text-base h-6" dir="rtl"></p>
-    <p id="lineEN2" class="text-gray-900 font-semibold text-base h-6"></p>
-    <p id="lineAR2" class="text-gray-900 font-semibold text-base h-6" dir="rtl"></p>
-    <p id="lineEN3" class="text-gray-900 font-semibold text-base h-6"></p>
-    <p id="lineAR3" class="text-gray-900 font-semibold text-base h-6" dir="rtl"></p>
-    <p id="lineEN4" class="text-gray-900 font-semibold text-base h-6"></p>
-    <p id="lineAR4" class="text-gray-900 font-semibold text-base h-6" dir="rtl"></p>
+  <!-- Bilingual text section below the form -->
+  <div class="max-w-xl w-full mt-4 text-center space-y-1">
+    <p id="lineEN" class="text-gray-900 font-semibold text-base h-6"></p>
+    <p id="lineAR" class="text-gray-900 font-semibold text-base h-6" dir="rtl"></p>
   </div>
 
-  <!-- Modal -->
-  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
-    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 w-full max-w-sm shadow-2xl">
-      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-      </svg>
-      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8"></p>
-    </div>
-  </div>
-
-  <!-- Scripts -->
   <script>
-    const descEN = "This tool trims YouTube videos and lets you pick resolution easily.";
-    const descAR = "هذه الأداة تقوم بقص فيديوهات يوتيوب وتسمح باختيار الجودة بسهولة.";
+    // Arabic intro text (above form)
+    const introLines = [
+      "هذا التطبيق يساعدك على تقطيع فيديوهات اليوتيوب بسهولة وسرعة،",
+      "فقط ضع الرابط وسيتم استخراج الجودات المتاحة لتحديد المقاطع."
+    ];
+    const introElem = document.getElementById('introAR');
 
+    async function loopIntroText() {
+      let i = 0;
+      while (true) {
+        await typeWriterLoop(introElem, introLines[i % introLines.length], 50);
+        i++;
+      }
+    }
+
+    // Bilingual text below the form
     const linesEN = [
       "Since it is a free hosting,",
       "it only works on small videos and still has problems,",
-      "and may crash many times till you can get your video...",
+      "and may crash many times till you can get your video... ",
       "sorry for that and we hope you wait for the final version."
     ];
 
@@ -100,76 +115,80 @@
       "نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
     ];
 
-    async function typeLine(el, text) {
-      for (let i = 0; i <= text.length; i++) {
-        el.textContent = text.substring(0, i);
-        await new Promise(res => setTimeout(res, 40));
-      }
-    }
+    const elemEN = document.getElementById('lineEN');
+    const elemAR = document.getElementById('lineAR');
 
-    async function clearLine(el) {
-      const text = el.textContent;
-      for (let i = text.length; i >= 0; i--) {
-        el.textContent = text.substring(0, i);
-        await new Promise(res => setTimeout(res, 30));
-      }
-    }
-
-    async function loopLines() {
-      const elemsEN = linesEN.map((_, i) => document.getElementById(`lineEN${i + 1}`));
-      const elemsAR = linesAR.map((_, i) => document.getElementById(`lineAR${i + 1}`));
+    async function loopBilingualText() {
+      let i = 0;
       while (true) {
-        for (let i = 0; i < linesEN.length; i++) {
-          await Promise.all([
-            typeLine(elemsEN[i], linesEN[i]),
-            typeLine(elemsAR[i], linesAR[i])
-          ]);
-          await new Promise(res => setTimeout(res, 1000));
-          await Promise.all([
-            clearLine(elemsEN[i]),
-            clearLine(elemsAR[i])
-          ]);
-          await new Promise(res => setTimeout(res, 500));
-        }
+        await Promise.all([
+          typeWriterLoop(elemEN, linesEN[i % linesEN.length]),
+          typeWriterLoop(elemAR, linesAR[i % linesAR.length])
+        ]);
+        i++;
       }
     }
 
-    function loopTypewriterModalText() {
-      const el = document.getElementById('typewriterText');
-      const text = "Processing the video resolutions...";
-      let i = 0, isDel = false;
-
-      function tick() {
-        if (!isDel) {
-          el.textContent = text.substring(0, i++);
-          if (i > text.length) {
-            isDel = true;
-            setTimeout(tick, 500);
-            return;
-          }
-        } else {
-          el.textContent = text.substring(0, i--);
-          if (i < 0) {
-            isDel = false;
-          }
+    // Generic typewriter loop function
+    function typeWriterLoop(element, text, speed = 60) {
+      return new Promise(async (resolve) => {
+        for (let i = 0; i <= text.length; i++) {
+          element.textContent = text.substring(0, i);
+          await new Promise(r => setTimeout(r, speed));
         }
-        setTimeout(tick, 60);
-      }
-      tick();
+        await new Promise(r => setTimeout(r, 1000));
+        for (let i = text.length; i >= 0; i--) {
+          element.textContent = text.substring(0, i);
+          await new Promise(r => setTimeout(r, speed));
+        }
+        await new Promise(r => setTimeout(r, 500));
+        resolve();
+      });
     }
 
-    document.getElementById('downloadForm').addEventListener('submit', function () {
+    // Modal typewriter functionality
+    const form = document.getElementById('downloadForm');
+    const modal = document.getElementById('loadingModal');
+    const typewriter = document.getElementById('typewriterText');
+    const modalMessage = "Processing the video resolutions...";
+    let index = 0;
+    let isDeleting = false;
+
+    function loopTypewriterModal() {
+      let currentText = typewriter.textContent;
+
+      if (!isDeleting) {
+        typewriter.textContent = modalMessage.substring(0, index + 1);
+        index++;
+        if (index === modalMessage.length) {
+          isDeleting = true;
+          setTimeout(loopTypewriterModal, 500);
+          return;
+        }
+      } else {
+        typewriter.textContent = modalMessage.substring(0, index - 1);
+        index--;
+        if (index === 0) {
+          isDeleting = false;
+        }
+      }
+
+      setTimeout(loopTypewriterModal, 60);
+    }
+
+    // Trigger modal on form submit
+    form.addEventListener('submit', function () {
       document.getElementById('submitBtn').disabled = true;
       document.getElementById('buttonText').textContent = 'Processing...';
       document.getElementById('spinner').classList.remove('hidden');
-      document.getElementById('loadingModal').classList.remove('hidden');
-      loopTypewriterModalText();
+      modal.classList.remove('hidden');
+      loopTypewriterModal();
     });
 
+    // Start everything on page load
     window.addEventListener('load', () => {
-      typeLine(document.getElementById('descEN'), descEN);
-      typeLine(document.getElementById('descAR'), descAR);
-      loopLines();
+      loopIntroText();
+      loopBilingualText();
     });
   </script>
 </body>
