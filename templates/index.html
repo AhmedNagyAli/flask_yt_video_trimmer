@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>YT Video Trimmer</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @keyframes blink {
@@ -20,7 +20,7 @@
 </head>
 <body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen px-4 py-8">
 
-  <!-- Animated Bilingual Text Above Form -->
+  <!-- Bilingual typewriter text above the form -->
   <div class="max-w-xl w-full mb-6 text-center space-y-4">
     <div class="space-y-2">
       <!-- English lines container -->
@@ -33,6 +33,17 @@
       <p id="lineAR1" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineAR2" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineAR3" class="text-gray-900 font-semibold text-base h-6"></p>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
+    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 sm:space-y-6 w-full max-w-sm sm:max-w-md shadow-2xl">
+      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8 sm:h-10"></p>
     </div>
   </div>
 
@@ -53,7 +64,7 @@
         placeholder="Enter YouTube URL"
         class="w-full p-2 border border-gray-300 rounded"
         required
-      >
+      />
       <button
         type="submit"
         id="submitBtn"
@@ -78,20 +89,8 @@
     </form>
   </div>
 
-  <!-- Modal (same as before) -->
-  <div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50 px-4">
-    <div class="bg-white px-6 py-6 sm:px-10 sm:py-8 rounded-2xl flex flex-col items-center space-y-4 sm:space-y-6 w-full max-w-sm sm:max-w-md shadow-2xl">
-      <svg class="w-12 h-12 sm:w-16 sm:h-16 text-indigo-600 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
-      <p id="typewriterText" class="text-lg sm:text-xl font-semibold text-gray-800 typewriter w-full text-center h-8 sm:h-10"></p>
-    </div>
-  </div>
-
-  <!-- Scripts -->
-   <script>
-    // Text lines
+  <script>
+    // Bilingual lines for the top text
     const linesEN = [
       "Since it is a free hosting,",
       "it only works on small videos and still has problems,",
@@ -104,7 +103,7 @@
       "وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
     ];
 
-    // Elements
+    // Elements for bilingual text above form
     const elemsEN = [
       document.getElementById('lineEN1'),
       document.getElementById('lineEN2'),
@@ -117,7 +116,7 @@
       document.getElementById('lineAR3')
     ];
 
-    // Typewriter loop for a single element (returns a Promise)
+    // Typewriter loop for a single element (returns Promise)
     function typeWriterLoop(element, text, speed = 60) {
       return new Promise(async (resolve) => {
         // Type in
@@ -154,10 +153,47 @@
       }
     }
 
+    // Modal typewriter message
+    const form = document.getElementById('downloadForm');
+    const modal = document.getElementById('loadingModal');
+    const typewriter = document.getElementById('typewriterText');
+    const modalMessage = "Processing the video resolutions...";
+    let index = 0;
+    let isDeleting = false;
+
+    function loopTypewriterModal() {
+      let currentText = typewriter.textContent;
+
+      if (!isDeleting) {
+        typewriter.textContent = modalMessage.substring(0, index + 1);
+        index++;
+        if (index === modalMessage.length) {
+          isDeleting = true;
+          setTimeout(loopTypewriterModal, 1000);
+          return;
+        }
+      } else {
+        typewriter.textContent = modalMessage.substring(0, index - 1);
+        index--;
+        if (index === 0) {
+          isDeleting = false;
+        }
+      }
+
+      setTimeout(loopTypewriterModal, 60);
+    }
+
+    // Event listener to show modal and start modal typewriter on form submit
+    form.addEventListener('submit', function () {
+      document.getElementById('submitBtn').disabled = true;
+      document.getElementById('buttonText').textContent = 'Processing...';
+      document.getElementById('spinner').classList.remove('hidden');
+      modal.classList.remove('hidden');
+      loopTypewriterModal();
+    });
+
+    // Start bilingual loop after page load
     window.addEventListener('load', loopAllLines);
   </script>
-
 </body>
-
-
 </html>
