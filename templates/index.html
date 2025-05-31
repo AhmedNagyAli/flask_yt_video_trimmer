@@ -27,12 +27,14 @@
       <p id="lineEN1" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineEN2" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineEN3" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineEN4" class="text-gray-900 font-semibold text-base h-6"></p>
     </div>
     <div dir="rtl" class="space-y-2">
       <!-- Arabic lines container -->
       <p id="lineAR1" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineAR2" class="text-gray-900 font-semibold text-base h-6"></p>
       <p id="lineAR3" class="text-gray-900 font-semibold text-base h-6"></p>
+      <p id="lineAR4" class="text-gray-900 font-semibold text-base h-6"></p>
     </div>
   </div>
 
@@ -94,26 +96,30 @@
     const linesEN = [
       "Since it is a free hosting,",
       "it only works on small videos and still has problems,",
-      "and may crash many times till you can get your video... sorry for that and we hope you wait for the final version."
+      "and may crash many times till you can get your video... ",
+      "sorry for that and we hope you wait for the final version."
     ];
 
     const linesAR = [
       "نظرًا لأنه استضافة مجانية،",
       "فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل،",
-      "وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
+      "وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ...",
+      "نأسف لذلك ونأمل أن تنتظر الإصدار النهائي."
     ];
 
     // Elements for bilingual text above form
     const elemsEN = [
       document.getElementById('lineEN1'),
       document.getElementById('lineEN2'),
-      document.getElementById('lineEN3')
+      document.getElementById('lineEN3'),
+      document.getElementById('lineEN4')
     ];
 
     const elemsAR = [
       document.getElementById('lineAR1'),
       document.getElementById('lineAR2'),
-      document.getElementById('lineAR3')
+      document.getElementById('lineAR3'),
+      document.getElementById('lineAR4')
     ];
 
     // Typewriter loop for a single element (returns Promise)
@@ -169,7 +175,7 @@
         index++;
         if (index === modalMessage.length) {
           isDeleting = true;
-          setTimeout(loopTypewriterModal, 1000);
+          setTimeout(loopTypewriterModal, 500);
           return;
         }
       } else {
