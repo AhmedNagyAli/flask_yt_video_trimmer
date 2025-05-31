@@ -18,12 +18,14 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 flex flex-col items-center min-h-screen px-4 py-8 relative">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen px-4 py-8 relative">
 
-  <!-- Typewriter Message Above the App -->
-  <div class="mb-6 text-center max-w-xl w-full px-4">
-    <p id="topTypewriterEN" class="typewriter text-gray-800 text-sm sm:text-base font-medium h-6 sm:h-8"></p>
-    <p id="topTypewriterAR" class="typewriter text-gray-800 text-sm sm:text-base font-medium h-6 sm:h-8" dir="rtl"></p>
+  <!-- Typewriter Message in the Middle -->
+  <div class="absolute inset-0 flex items-center justify-center z-40 pointer-events-none">
+    <div class="text-center">
+      <p id="topTypewriterEN" class="text-gray-900 text-sm sm:text-base font-semibold h-6 sm:h-8"></p>
+      <p id="topTypewriterAR" class="text-gray-900 text-sm sm:text-base font-semibold h-6 sm:h-8" dir="rtl"></p>
+    </div>
   </div>
 
   <!-- Modal -->
@@ -85,29 +87,27 @@
     const modal = document.getElementById('loadingModal');
     const typewriter = document.getElementById('typewriterText');
     const message = "Processing the video resolutions...";
-    let index = 0;
-    let isDeleting = false;
+    let modalIndex = 0;
+    let modalDeleting = false;
 
-    function loopTypewriter() {
-      let currentText = typewriter.textContent;
-
-      if (!isDeleting) {
-        typewriter.textContent = message.substring(0, index + 1);
-        index++;
-        if (index === message.length) {
-          isDeleting = true;
-          setTimeout(loopTypewriter, 1000);
+    function loopModalTypewriter() {
+      if (!modalDeleting) {
+        typewriter.textContent = message.substring(0, modalIndex + 1);
+        modalIndex++;
+        if (modalIndex === message.length) {
+          modalDeleting = true;
+          setTimeout(loopModalTypewriter, 1000);
           return;
         }
       } else {
-        typewriter.textContent = message.substring(0, index - 1);
-        index--;
-        if (index === 0) {
-          isDeleting = false;
+        typewriter.textContent = message.substring(0, modalIndex - 1);
+        modalIndex--;
+        if (modalIndex === 0) {
+          modalDeleting = false;
         }
       }
 
-      setTimeout(loopTypewriter, 60);
+      setTimeout(loopModalTypewriter, 60);
     }
 
     form.addEventListener('submit', function () {
@@ -115,33 +115,54 @@
       document.getElementById('buttonText').textContent = 'Processing...';
       document.getElementById('spinner').classList.remove('hidden');
       modal.classList.remove('hidden');
-      loopTypewriter();
+      loopModalTypewriter();
     });
 
-    // Top message animation
+    // Top message loop animation
     const topEN = document.getElementById('topTypewriterEN');
     const topAR = document.getElementById('topTypewriterAR');
 
     const messageEN = "Since it is a free hosting it only works on small videos and still have problems and may crash many times till you can get your video ...sorry for that and we hope you wait for the final version";
     const messageAR = "نظرًا لأنه استضافة مجانية ، فإنه يعمل فقط على مقاطع الفيديو الصغيرة ولا يزال يعاني من مشاكل وقد يتعطل عدة مرات حتى تتمكن من الحصول على الفيديو الخاص بك ... نأسف لذلك ونأمل أن تنتظر الإصدار النهائي";
 
-    let enIndex = 0;
-    let arIndex = 0;
+    let enIndex = 0, arIndex = 0;
+    let enDeleting = false, arDeleting = false;
 
-    function typeTopMessage() {
-      if (enIndex <= messageEN.length) {
-        topEN.textContent = messageEN.substring(0, enIndex++);
-      }
-      if (arIndex <= messageAR.length) {
-        topAR.textContent = messageAR.substring(0, arIndex++);
+    function loopTopMessages() {
+      // English loop
+      if (!enDeleting) {
+        topEN.textContent = messageEN.substring(0, enIndex + 1);
+        enIndex++;
+        if (enIndex === messageEN.length) {
+          enDeleting = true;
+        }
+      } else {
+        topEN.textContent = messageEN.substring(0, enIndex - 1);
+        enIndex--;
+        if (enIndex === 0) {
+          enDeleting = false;
+        }
       }
 
-      if (enIndex <= messageEN.length || arIndex <= messageAR.length) {
-        setTimeout(typeTopMessage, 50);
+      // Arabic loop
+      if (!arDeleting) {
+        topAR.textContent = messageAR.substring(0, arIndex + 1);
+        arIndex++;
+        if (arIndex === messageAR.length) {
+          arDeleting = true;
+        }
+      } else {
+        topAR.textContent = messageAR.substring(0, arIndex - 1);
+        arIndex--;
+        if (arIndex === 0) {
+          arDeleting = false;
+        }
       }
+
+      setTimeout(loopTopMessages, 60);
     }
 
-    window.addEventListener('load', typeTopMessage);
+    window.addEventListener('load', loopTopMessages);
   </script>
 </body>
 
