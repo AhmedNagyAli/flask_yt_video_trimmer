@@ -198,7 +198,7 @@ def download():
 
 
 
-def delayed_delete(filepath, delay=10):
+def delayed_delete(filepath, delay=7):
     def delete_file():
         import time
         time.sleep(delay)
