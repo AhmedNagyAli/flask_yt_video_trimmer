@@ -200,12 +200,22 @@ def download():
 @app.route("/videos/<path:filename>")
 def serve_video(filename):
     try:
-        # Don't delete immediately - let the user download first
+        file_path = os.path.join(OUTPUT_DIR, filename)
+        
+        @after_this_request
+        def remove_file(response):
+            try:
+                os.remove(file_path)
+                app.logger.info(f"Successfully deleted {filename}")
+            except Exception as e:
+                app.logger.error(f"Error deleting file {filename}: {str(e)}")
+            return response
+            
         return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
     except Exception as e:
         app.logger.error(f"Error serving video: {str(e)}")
         return "File not found", 404
-
+    
 # @app.route("/videos/<filename>")
 # def serve_video(filename):
 #     file_path = os.path.join(OUTPUT_DIR, filename)
@@ -220,9 +230,9 @@ def serve_video(filename):
 
 #     return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 # if __name__ == "__main__":
-#     port = int(os.environ.get("PORT",6000))
-#     app.run(host="0.0.0.0",port=port)
+#     app.run(debug=True)
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT",6000))
+    app.run(host="0.0.0.0",port=port)
