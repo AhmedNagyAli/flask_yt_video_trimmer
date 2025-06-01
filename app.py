@@ -7,10 +7,54 @@ import json
 import yt_dlp
 from urllib.parse import urlparse
 import threading
+import time
+import logging
+from logging.handlers import RotatingFileHandler
+
 
 app = Flask(__name__)
 OUTPUT_DIR = "static/videos"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
+def setup_logging(app):
+    """Guaranteed-working logging setup"""
+    try:
+        log_dir = 'logs'
+        os.makedirs(log_dir, exist_ok=True)
+        
+        test_file = os.path.join(log_dir, 'test.log')
+        with open(test_file, 'a') as f:
+            f.write('Testing write permissions\n')
+        os.remove(test_file)
+        
+        file_handler = RotatingFileHandler(
+            os.path.join(log_dir, 'app.log'),
+            maxBytes=1024*1024,
+            backupCount=5,
+            encoding='utf-8'  # Add encoding
+        )
+        file_handler.setFormatter(logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        ))
+        
+        app.logger.handlers = []
+        
+        app.logger.addHandler(file_handler)
+        
+        app.logger.setLevel(logging.INFO)
+        file_handler.setLevel(logging.INFO)
+        
+        app.logger.info("Logging configured successfully!")
+        app.logger.debug("Debug test")  # Shouldn't appear
+        app.logger.warning("Warning test")
+        
+    except Exception as e:
+        print(f"CRITICAL: Failed to configure logging: {str(e)}")
+        raise
+
+setup_logging(app) 
+
 
 def safe_name(filename):
     nfkd_form = unicodedata.normalize('NFKD', filename)
@@ -43,6 +87,11 @@ def get_preview_url(youtube_url, preferred_resolution='480p'):
                 fmt.get('vcodec') != 'none'):
                 return fmt.get('url')
     return None
+
+
+
+
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -190,6 +239,7 @@ def download():
             return "Error: Output file was not created", 500
 
         relative_path = f"videos/{safe_title}/{output_filename}"
+        app.logger.info(f"Attempting to serve: {relative_path}")
         return render_template("result.html", filename=relative_path)
 
     except Exception as e:
@@ -197,39 +247,37 @@ def download():
         return "An error occurred while processing your request", 500
 
 
-
-def delayed_delete(filepath, delay=7):
-    def delete_file():
-        import time
-        time.sleep(delay)
-        try:
-            if os.path.exists(filepath):
-                os.remove(filepath)
-                app.logger.info(f"Successfully deleted {filepath}")
-        except Exception as e:
-            app.logger.error(f"Error deleting file: {str(e)}")
-    
-    thread = threading.Thread(target=delete_file)
-    thread.daemon = True
-    thread.start()
-
-
 @app.route("/videos/<path:filename>")
 def serve_video(filename):
-    file_path = os.path.join(OUTPUT_DIR, filename)
+    file_path = os.path.join(app.config['OUTPUT_DIR'], filename)
     
+    app.logger.info(f"Attempting to serve: {filename}")
+    app.logger.debug(f"Full path: {file_path}")
+
     if not os.path.exists(file_path):
+        app.logger.error(f"File not found: {file_path}")
         return "File not found", 404
 
     try:
-        # Start deletion in background after delay
-        delayed_delete(file_path)
-        return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
+        @after_this_request
+        def cleanup(response):
+            try:
+                time.sleep(2)  # Download completion buffer
+                if os.path.exists(file_path):
+                    os.remove(file_path)
+                    app.logger.info(f"Deleted: {file_path}")
+                else:
+                    app.logger.warning(f"Already missing: {file_path}")
+            except Exception as e:
+                app.logger.error(f"Deletion failed: {str(e)}", exc_info=True)
+            return response
+        app.logger.info(f"file: {file_path}")
+        return send_from_directory(app.config['OUTPUT_DIR'], filename, as_attachment=True)
+        
     except Exception as e:
-        app.logger.error(f"Error serving video: {str(e)}")
+        app.logger.error(f"Video serve failed: {str(e)}", exc_info=True)
         return "Internal server error", 500
-    
-    
+
     
 # @app.route("/videos/<filename>")
 # def serve_video(filename):
