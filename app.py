@@ -6,7 +6,7 @@ import unicodedata
 import json
 import yt_dlp
 from urllib.parse import urlparse
-
+import threading
 
 app = Flask(__name__)
 OUTPUT_DIR = "static/videos"
@@ -197,24 +197,39 @@ def download():
         return "An error occurred while processing your request", 500
 
 
+
+def delayed_delete(filepath, delay=10):
+    def delete_file():
+        import time
+        time.sleep(delay)
+        try:
+            if os.path.exists(filepath):
+                os.remove(filepath)
+                app.logger.info(f"Successfully deleted {filepath}")
+        except Exception as e:
+            app.logger.error(f"Error deleting file: {str(e)}")
+    
+    thread = threading.Thread(target=delete_file)
+    thread.daemon = True
+    thread.start()
+
+
 @app.route("/videos/<path:filename>")
 def serve_video(filename):
+    file_path = os.path.join(OUTPUT_DIR, filename)
+    
+    if not os.path.exists(file_path):
+        return "File not found", 404
+
     try:
-        file_path = os.path.join(OUTPUT_DIR, filename)
-        
-        @after_this_request
-        def remove_file(response):
-            try:
-                os.remove(file_path)
-                app.logger.info(f"Successfully deleted {filename}")
-            except Exception as e:
-                app.logger.error(f"Error deleting file {filename}: {str(e)}")
-            return response
-            
+        # Start deletion in background after delay
+        delayed_delete(file_path)
         return send_from_directory(OUTPUT_DIR, filename, as_attachment=True)
     except Exception as e:
         app.logger.error(f"Error serving video: {str(e)}")
-        return "File not found", 404
+        return "Internal server error", 500
+    
+    
     
 # @app.route("/videos/<filename>")
 # def serve_video(filename):
